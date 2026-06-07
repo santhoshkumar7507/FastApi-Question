@@ -25,6 +25,9 @@ const metricMessages = document.getElementById('metric-messages');
 const badge = document.querySelector('.badge');
 const attendanceList = document.getElementById('attendance-students-list');
 
+let chartInstance = null;
+let studentAttendance = {};
+
 // Initialize
 async function init() {
     try {
@@ -71,6 +74,75 @@ function login(user) {
     
     // Load Initial Data
     loadHistory();
+
+    // Trigger login Confetti
+    triggerConfetti();
+
+    // Init Chart
+    initChart();
+}
+
+function initChart() {
+    const ctx = document.getElementById('attendanceChart');
+    if (!ctx) return;
+    chartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['#34d399', '#f87171'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: document.body.classList.contains('light-mode') ? '#0f172a' : '#f8fafc' } }
+            }
+        }
+    });
+}
+
+function updateChart() {
+    let present = 0, absent = 0;
+    for (let id in studentAttendance) {
+        if (studentAttendance[id] === 'present') present++;
+        else if (studentAttendance[id] === 'absent') absent++;
+    }
+    if (chartInstance) {
+        chartInstance.data.datasets[0].data = [present, absent];
+        chartInstance.update();
+    }
+}
+
+function triggerConfetti() {
+    if (typeof confetti !== 'undefined') {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+}
+
+function showToast(title, content, type="success") {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <h4>${title}</h4>
+            <p>${content}</p>
+        </div>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
 }
 
 function connectWebSocket() {
@@ -95,14 +167,29 @@ function handleSocketMessage(data) {
             let count = parseInt(metricMessages.textContent) || 0;
             metricMessages.textContent = count + 1;
             badge.style.display = 'block';
+            showToast('New Message', `${data.sender}: ${data.content}`, 'success');
         }
     } else if (data.type === 'announcement') {
         appendAnnouncement(data.title, data.content, new Date());
         badge.style.display = 'block';
         addActivity('New Announcement', `"${data.title}" was just posted.`);
+        showToast('Announcement', data.title, 'announcement');
+        triggerConfetti();
     } else if (data.type === 'attendance') {
         addActivity('Attendance Updated', `${data.student_name} marked as ${data.status}`);
-        // Optionally update a metric if we wanted
+        // Ensure studentAttendance has a mapping from name if ID is not available in event
+        // In this case we just mock it using the name as key for the chart
+        studentAttendance[data.student_name] = data.status;
+        updateChart();
+    } else if (data.type === 'typing') {
+        const ind = document.getElementById('typing-indicator');
+        const txt = ind.querySelector('.typing-text');
+        if (data.is_typing && data.sender !== currentUser.full_name) {
+            txt.textContent = `${data.sender} is typing`;
+            ind.classList.remove('hidden');
+        } else {
+            ind.classList.add('hidden');
+        }
     }
 }
 
@@ -141,11 +228,21 @@ navItems.forEach(item => {
 });
 
 // Chat
+let typingTimeout;
+chatInput.addEventListener('input', () => {
+    if (ws) ws.send(JSON.stringify({ action: 'typing', is_typing: true }));
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        if (ws) ws.send(JSON.stringify({ action: 'typing', is_typing: false }));
+    }, 1500);
+});
+
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const content = chatInput.value.trim();
     if (content && ws) {
         ws.send(JSON.stringify({ action: 'chat', content: content }));
+        ws.send(JSON.stringify({ action: 'typing', is_typing: false }));
         chatInput.value = '';
     }
 });
@@ -253,6 +350,18 @@ formAnnouncement.addEventListener('submit', (e) => {
         formAnnouncement.reset();
     }
 });
+
+// Theme Toggle
+const themeToggleBtn = document.getElementById('theme-toggle');
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        if (chartInstance) {
+            chartInstance.options.plugins.legend.labels.color = document.body.classList.contains('light-mode') ? '#0f172a' : '#f8fafc';
+            chartInstance.update();
+        }
+    });
+}
 
 // Start
 init();

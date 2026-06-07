@@ -13,6 +13,15 @@
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
+body.light-mode {
+    --bg-dark: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -316,6 +325,7 @@ body {
     background: var(--danger);
     border-radius: 50%;
     display: none;
+    box-shadow: 0 0 8px var(--danger);
 }
 
 .pulse {
@@ -387,11 +397,13 @@ body {
     display: flex;
     align-items: center;
     gap: 20px;
-    transition: transform 0.2s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform-style: preserve-3d;
 }
 
 .metric-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .metric-icon {
@@ -441,6 +453,12 @@ body {
     margin-bottom: 12px;
     border-left: 4px solid var(--primary);
     animation: slideIn 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.announcement-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .announcement-item h4 {
@@ -488,6 +506,7 @@ body {
     height: 8px;
     border-radius: 50%;
     background: var(--success);
+    box-shadow: 0 0 8px var(--success);
 }
 
 .chat-messages {
