@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <div class="background-shapes">
@@ -116,6 +118,10 @@
                     </div>
 
                     <div class="content-grid">
+                        <div class="chart-section glass-panel">
+                            <h3>Live Attendance Analytics</h3>
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
                         <div class="announcements-section glass-panel">
                             <h3>Live Announcements</h3>
                             <div class="announcements-list" id="announcements-list">
@@ -143,6 +149,10 @@
                         </div>
                         <div class="chat-messages" id="chat-messages">
                             <!-- Messages -->
+                        </div>
+                        <div id="typing-indicator" class="typing-indicator hidden">
+                            <span class="typing-text">Someone is typing</span>
+                            <div class="dots"><span></span><span></span><span></span></div>
                         </div>
                         <div class="chat-input-area">
                             <form id="chat-form">
@@ -191,6 +201,8 @@
             </form>
         </div>
     </div>
+
+    <div id="toast-container" class="toast-container"></div>
 
     <script src="/static/js/app.js"></script>
 </body>

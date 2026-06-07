@@ -91,6 +91,13 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session =
                     "student_name": student.full_name,
                     "status": status
                 }))
+            elif action == "typing":
+                sender_name = db.query(models.User).filter(models.User.username == client_id).first().full_name
+                await manager.broadcast(json.dumps({
+                    "type": "typing",
+                    "sender": sender_name,
+                    "is_typing": parsed_data.get("is_typing", False)
+                }))
                 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
