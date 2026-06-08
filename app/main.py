@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from . import models, database
+from . import models, database, schemas
 
 models.Base.metadata.create_all(bind=database.engine)
 
@@ -103,17 +103,17 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str, db: Session =
         manager.disconnect(websocket)
         await manager.broadcast(json.dumps({"type": "system", "content": f"Client #{client_id} left the chat"}))
 
-@app.get("/api/users")
+@app.get("/api/users", response_model=List[schemas.UserResponse])
 def get_users(db: Session = Depends(database.get_db)):
     users = db.query(models.User).all()
     return [{"id": u.id, "username": u.username, "full_name": u.full_name, "is_teacher": u.is_teacher} for u in users]
 
-@app.get("/api/announcements")
+@app.get("/api/announcements", response_model=List[schemas.AnnouncementResponse])
 def get_announcements(db: Session = Depends(database.get_db)):
     anns = db.query(models.Announcement).order_by(models.Announcement.timestamp.desc()).limit(10).all()
     return [{"id": a.id, "title": a.title, "content": a.content, "timestamp": str(a.timestamp)} for a in anns]
 
-@app.get("/api/chat")
+@app.get("/api/chat", response_model=List[schemas.ChatMessageResponse])
 def get_chat_history(db: Session = Depends(database.get_db)):
     msgs = db.query(models.Message).order_by(models.Message.timestamp.desc()).limit(50).all()
     # Reverse to get chronological order

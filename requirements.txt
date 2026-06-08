@@ -4,3 +4,4 @@ websockets
 sqlalchemy
 jinja2
 pydantic
+python-dotenv

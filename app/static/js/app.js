@@ -128,6 +128,7 @@ function triggerConfetti() {
 }
 
 function showToast(title, content, type="success") {
+    playPopSound();
     const container = document.getElementById('toast-container');
     if (!container) return;
     const toast = document.createElement('div');
@@ -193,6 +194,34 @@ function handleSocketMessage(data) {
     }
 }
 
+// Markdown Parser
+function parseMarkdown(text) {
+    if (!text) return '';
+    return text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>');
+}
+
+// Audio Cue
+function playPopSound() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.3);
+    } catch (e) { console.error(e); }
+}
+
 async function loadHistory() {
     // Load announcements
     try {
@@ -250,9 +279,10 @@ chatForm.addEventListener('submit', (e) => {
 function appendMessage(sender, content, isMe) {
     const div = document.createElement('div');
     div.className = `message ${isMe ? 'sent' : 'received'}`;
+    const parsedContent = parseMarkdown(content);
     div.innerHTML = `
         <div class="message-sender">${sender}</div>
-        <div class="message-content">${content}</div>
+        <div class="message-content">${parsedContent}</div>
     `;
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -264,10 +294,11 @@ function appendAnnouncement(title, content, date) {
     
     // Format date roughly
     const timeStr = typeof date === 'string' ? new Date(date).toLocaleTimeString() : date.toLocaleTimeString();
+    const parsedContent = parseMarkdown(content);
 
     div.innerHTML = `
         <h4>${title}</h4>
-        <p>${content}</p>
+        <p>${parsedContent}</p>
         <div class="announcement-meta">
             <span>Admin</span>
             <span>${timeStr}</span>
@@ -360,6 +391,71 @@ if (themeToggleBtn) {
             chartInstance.options.plugins.legend.labels.color = document.body.classList.contains('light-mode') ? '#0f172a' : '#f8fafc';
             chartInstance.update();
         }
+    });
+}
+
+// Interactive Fluid Background
+document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 40;
+    const y = (e.clientY / window.innerHeight - 0.5) * 40;
+    const s1 = document.querySelector('.shape-1');
+    const s2 = document.querySelector('.shape-2');
+    const s3 = document.querySelector('.shape-3');
+    if(s1) s1.style.transform = `translate(${x}px, ${y}px)`;
+    if(s2) s2.style.transform = `translate(${-x * 1.5}px, ${-y * 1.5}px)`;
+    if(s3) s3.style.transform = `translate(${x * 0.5}px, ${-y * 0.5}px)`;
+});
+
+// Command Palette Logic
+const cpOverlay = document.getElementById('command-palette-overlay');
+const cpInput = document.getElementById('cp-input');
+const cpResults = document.getElementById('cp-results');
+
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        toggleCommandPalette();
+    } else if (e.key === 'Escape' && cpOverlay && !cpOverlay.classList.contains('hidden')) {
+        toggleCommandPalette(false);
+    }
+});
+
+function toggleCommandPalette(force) {
+    if (!cpOverlay) return;
+    const isHidden = force !== undefined ? !force : cpOverlay.classList.contains('hidden');
+    if (isHidden) {
+        cpOverlay.classList.remove('hidden');
+        cpInput.value = '';
+        cpInput.focus();
+        renderCPResults('');
+    } else {
+        cpOverlay.classList.add('hidden');
+    }
+}
+
+if (cpInput) {
+    cpInput.addEventListener('input', (e) => renderCPResults(e.target.value));
+}
+
+function renderCPResults(query) {
+    if (!cpResults) return;
+    const q = query.toLowerCase();
+    const actions = [
+        { title: 'Go to Dashboard', icon: 'M4 6h16M4 12h16M4 18h16', action: () => document.querySelector('[data-target="dashboard"]').click() },
+        { title: 'Go to Chat', icon: 'M8 12h.01M12 12h.01M16 12h.01', action: () => document.querySelector('[data-target="chat"]').click() },
+    ];
+    if (currentUser && currentUser.is_teacher) {
+        actions.push({ title: 'New Announcement', icon: 'M12 4v16m8-8H4', action: () => btnNewAnnouncement.click() });
+    }
+    
+    const matches = actions.filter(a => a.title.toLowerCase().includes(q));
+    cpResults.innerHTML = '';
+    matches.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'cp-item';
+        div.innerHTML = `<div class="cp-item-icon"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${m.icon}"></path></svg></div><span>${m.title}</span>`;
+        div.onclick = () => { m.action(); toggleCommandPalette(false); };
+        cpResults.appendChild(div);
     });
 }
 
