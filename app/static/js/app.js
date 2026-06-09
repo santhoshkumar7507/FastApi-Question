@@ -394,8 +394,17 @@ if (themeToggleBtn) {
     });
 }
 
-// Interactive Fluid Background
+// Interactive Fluid Background & Cursor Glow
+const cursorGlow = document.createElement('div');
+cursorGlow.className = 'cursor-glow';
+document.body.appendChild(cursorGlow);
+
 document.addEventListener('mousemove', (e) => {
+    // Cursor glow
+    cursorGlow.style.left = e.clientX + 'px';
+    cursorGlow.style.top = e.clientY + 'px';
+
+    // Parallax background shapes
     const x = (e.clientX / window.innerWidth - 0.5) * 40;
     const y = (e.clientY / window.innerHeight - 0.5) * 40;
     const s1 = document.querySelector('.shape-1');
@@ -404,6 +413,29 @@ document.addEventListener('mousemove', (e) => {
     if(s1) s1.style.transform = `translate(${x}px, ${y}px)`;
     if(s2) s2.style.transform = `translate(${-x * 1.5}px, ${-y * 1.5}px)`;
     if(s3) s3.style.transform = `translate(${x * 0.5}px, ${-y * 0.5}px)`;
+});
+
+// Interactive 3D Tilt for Metric Cards
+document.querySelectorAll('.metric-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateX = ((y - centerY) / centerY) * -10;
+        const rotateY = ((x - centerX) / centerX) * 10;
+        
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        // To allow smooth reset, we can add a quick transition class
+        card.style.transition = 'transform 0.5s ease, box-shadow 0.4s ease';
+        setTimeout(() => { card.style.transition = 'box-shadow 0.4s ease, border-color 0.4s ease, transform 0.1s'; }, 500);
+    });
 });
 
 // Command Palette Logic

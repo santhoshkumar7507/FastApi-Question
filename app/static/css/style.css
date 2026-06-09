@@ -108,6 +108,20 @@ body {
     background: rgba(255,255,255,0.2);
 }
 
+/* Interactive Cursor Glow */
+.cursor-glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    mix-blend-mode: screen;
+    transition: width 0.2s, height 0.2s;
+}
+
 /* Glassmorphism Utilities */
 .glass-panel {
     background: var(--glass-bg);
@@ -443,7 +457,7 @@ body {
     display: flex;
     align-items: center;
     gap: 20px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: box-shadow 0.4s ease, border-color 0.4s ease, transform 0.1s;
     transform-style: preserve-3d;
     position: relative;
     overflow: hidden;
