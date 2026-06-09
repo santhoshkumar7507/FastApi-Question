@@ -409,13 +409,29 @@ body {
     display: flex;
     align-items: center;
     gap: 20px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform-style: preserve-3d;
+    position: relative;
+    overflow: hidden;
+}
+
+.metric-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
 .metric-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.metric-card:hover::after {
+    opacity: 1;
 }
 
 .metric-icon {
@@ -438,9 +454,12 @@ body {
 }
 
 .metric-info p {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
     margin-top: 4px;
+    background: linear-gradient(to right, #fff, var(--text-muted));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .content-grid {
@@ -459,18 +478,22 @@ body {
 }
 
 .announcement-item {
-    padding: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
-    margin-bottom: 12px;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+    margin-bottom: 16px;
     border-left: 4px solid var(--primary);
     animation: slideIn 0.3s ease;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 .announcement-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateX(8px);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 24px -8px rgba(0,0,0,0.3);
+    border-left-width: 6px;
 }
 
 .announcement-item h4 {
