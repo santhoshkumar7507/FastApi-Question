@@ -38,7 +38,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Background Shapes */
+/* Advanced Background Shapes */
 .background-shapes {
     position: fixed;
     top: 0;
@@ -47,46 +47,65 @@ body {
     height: 100vh;
     z-index: -1;
     overflow: hidden;
+    background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000 100%);
 }
 
 .shape {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.5;
-    animation: float 20s infinite;
+    filter: blur(120px);
+    opacity: 0.6;
+    animation: float 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .shape-1 {
-    width: 400px;
-    height: 400px;
-    background: var(--primary);
-    top: -100px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    top: -200px;
     left: -100px;
 }
 
 .shape-2 {
-    width: 500px;
-    height: 500px;
-    background: var(--accent);
-    bottom: -150px;
-    right: -100px;
-    animation-delay: -5s;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    bottom: -300px;
+    right: -200px;
+    animation-delay: -7s;
 }
 
 .shape-3 {
-    width: 300px;
-    height: 300px;
-    background: var(--success);
-    bottom: 20%;
-    left: 20%;
-    animation-delay: -10s;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, var(--success) 0%, transparent 70%);
+    bottom: 30%;
+    left: 30%;
+    animation-delay: -14s;
+    opacity: 0.4;
 }
 
 @keyframes float {
-    0%, 100% { transform: translate(0, 0); }
-    33% { transform: translate(30px, -50px); }
-    66% { transform: translate(-20px, 20px); }
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(50px, -80px) scale(1.1); }
+    66% { transform: translate(-40px, 40px) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.2);
 }
 
 /* Glassmorphism Utilities */
@@ -389,12 +408,27 @@ body {
     align-items: center;
     gap: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.6);
+}
+
+.btn-primary:hover::before {
+    transform: translateX(100%);
 }
 
 .metrics-grid {
@@ -413,25 +447,30 @@ body {
     transform-style: preserve-3d;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .metric-card::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+    top: 0; left: -150%; width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: skewX(-20deg);
+    transition: none;
 }
 
 .metric-card:hover {
     transform: translateY(-8px) scale(1.03);
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.1);
-    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
 }
 
 .metric-card:hover::after {
-    opacity: 1;
+    animation: shimmer 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes shimmer {
+    100% { left: 200%; }
 }
 
 .metric-icon {
